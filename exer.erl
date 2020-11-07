@@ -37,7 +37,7 @@ chat1(Name) ->
                     Chat2_Node ! {response, Name,Theconvo},
                     chat1(Name);
                 true-> 
-                    io:format("Your partner disconnected~n")
+                    io:format("Your partner disconnected.~n")
             end
     end.
 
