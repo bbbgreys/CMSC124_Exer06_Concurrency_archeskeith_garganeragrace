@@ -2,6 +2,12 @@
 -compile(export_all).
 -import(string,[equal/2]). 
 
+%TASKS FOR THE EXER:
+%----------DONE--------- - Connecting Two Nodes
+%----------DONE--- - Disconnecting when bye message is sent
+%----------DONE--------- - Send Messages but waits for the reply of the other code
+%-----NOT-STARTED-YET--- - Send Messages but does not wait for the reply of the other code
+
 % romeo = pong, first chat
 % juliet = ping, second chat
 
@@ -22,19 +28,17 @@ chat1(Name) ->
         %receives the input of the other node, and sends another input from this node
         {Chat2_Node,Theconvo2,Name2} ->
             io:format("~p: ~s",[Name2,Theconvo2]),
-            Bye_string = "bye",
-            Theconvo = io:get_line("You: "),
-            Status = equal(Bye_string,Theconvo),
+            Bye_string = "bye\n",
+            Status1 = string:equal(Theconvo2,Bye_string),
+            Status1,
             if
-                Status =:= false ->
+                Status1 == false ->
+                    Theconvo = io:get_line("You: "),
                     Chat2_Node ! {response, Name,Theconvo},
                     chat1(Name);
                 true-> 
-                    Chat2_Node ! bye
-            end;
-        bye ->
-            io:format("Your partner disconnected.~n")
-
+                    io:format("Your partner disconnected~n")
+            end
     end.
 
 %used to initialize the second chat 
@@ -49,21 +53,23 @@ chat2(1,Chat1_Node,Name2) ->
 
 chat2(N, Name2,Chat1_Node)-> 
     receive
+        %receives the response from the first node
         {response,Name,Theconvo}->
+            %message that was received from the first node
             io:format("~p: ~s",[Name,Theconvo]),
-            Theconvo2 = io:get_line("You: "),
-            Bye_string = "bye",
-            Status = equal(Bye_string,Theconvo),
+            %checks if the message received is "bye" to exit the infinite recursion
+            Bye_string = "bye\n",
+            Status2 = string:equal(Theconvo,Bye_string),
+            Status2,
             if
-                Status =:= false ->
+                Status2 == false ->
+                    Theconvo2 = io:get_line("You: "),
                     {chat1,Chat1_Node} ! {self(),Theconvo2,Name2},
                     chat2(N+1,Name2,Chat1_Node);
                 true ->
-                    Chat1_Node ! bye
-            end;
-    
-        bye ->
-            io:format("Your partner disconnected.~n")
+                    io:format("Your partner disconnected.~n")
+            end
+       
     end.
         
 
@@ -73,3 +79,5 @@ chat2(N, Name2,Chat1_Node)->
     
 % REFERENCES:
 % Checking if both strings are equal: https://www.tutorialspoint.com/erlang/erlang_equal.htm
+
+
