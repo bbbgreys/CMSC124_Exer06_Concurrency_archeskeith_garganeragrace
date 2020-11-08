@@ -18,7 +18,16 @@ init_chat()->
 
 chat1(Name) -> 
 
-    receive
+
+    receive 
+    
+        {ping,Chat2_Node,_} ->
+            %This accepts the convo of chat1, and sends it to the other node
+            Theconvo = io:get_line("You: "),
+            Chat2_Node ! {response,Name,Theconvo},
+            chat1(Name);
+
+    
         %_ is for the receiving end of the other node, to match the cases 
         {ping,Chat2_Node,_} -> 
             %This accepts the convo of chat1, and sends it to the other node
@@ -47,12 +56,14 @@ init_chat2(Chat1_Node) ->
     spawn(exer,chat2,[1,Chat1_Node,Name2]).
 
 %ping part with N 
+
 chat2(1,Chat1_Node,Name2) ->
     {chat1, Chat1_Node} ! {ping,self(),Name2},
     chat2(1+1,Name2,Chat1_Node);
 
 chat2(N, Name2,Chat1_Node)-> 
     receive
+
         %receives the response from the first node
         {response,Name,Theconvo}->
             %message that was received from the first node
